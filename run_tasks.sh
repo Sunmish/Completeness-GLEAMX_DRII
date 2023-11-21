@@ -2,21 +2,21 @@
 
 # A simple helper script to string together the completeness tasks that need to be run.
 
-cluster=replaceme
-nsrc=30000
-region=75,210,-43,-13
+cluster=setonix
+nsrc=90000
+region=310,90,-90,30
 flux=-3,-0.5,0.1
 nfiles=6
 sep_min=5
-outdir=./test_comp
-imageset='XG_170-231MHz'
+outdir=/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims/
+imageset='GLEAMX_DRII_170-231MHz'
 
-imageset_dir=/home/tim/Documents/Packages/GLEAM-X_Completness/test/input_images
+imageset_dir=/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims/
 
 export GLEAMX="${outdir}"
-export MYCODE=/home/tim/Documents/Packages/GLEAM-X_Completness
+export MYCODE=/astro/mwasci/software/kross/Completeness-GLEAMX_DRII/
 export NCPUS=38
-export CONTAINER=/home/tim/Documents/Packages/GLEAM-X_Completness/test/gleamx_testing_small.img
+export CONTAINER=/astro/mwasci/kross/GLEAM-X-pipeline/gleamx_container.img
 
 # set -x
 
@@ -35,16 +35,19 @@ fi
 mkdir "${GLEAMX}/input_images"
 
 #TODO: See how well this works with symlinks. Need to be sure the container can follow them.
-for suffix in "" "_bkg" "_rms" "_projpsf_psf"
-do
-    if [[ -e "${imageset_dir}/${imageset}${suffix}.fits" ]]
-    then
-        cp -v "${imageset_dir}/${imageset}${suffix}.fits" "${GLEAMX}/input_images"
-    else
-        echo "Could not find ${imageset_dir}/${imageset}${suffix}.fits. Exiting. "
-        exit 1
-    fi
-done
+# for suffix in "" "_bkg" "_rms" "_projpsf_psf"
+# do
+#     if [[ -e "${imageset_dir}/${imageset}${suffix}.fits" ]]
+#     then
+#         cp -v "${imageset_dir}/${imageset}${suffix}.fits" "${GLEAMX}/input_images"
+#     else
+#         echo "Could not find ${imageset_dir}/${imageset}${suffix}.fits. Exiting. "
+#         exit 1
+#     fi
+# done
+
+sbatch --time=06:00:00 $MYCODE/generate_pos.sh --ntasks-per-node=1 nsrc=${nsrc} region=${region} sep_min=5 output_dir=$GLEAMX/source_pos
+
 
 "$MYCODE"/generate_fluxes.sh \
 $nsrc \

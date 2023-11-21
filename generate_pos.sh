@@ -3,19 +3,19 @@
 # Generate list of random RA and Dec positions in specified region of sky
 
 #SBATCH --account=pawsey0272
-#SBATCH --partition=workq
-#SBATCH --clusters=magnus
+#SBATCH --partition=work
+#SBATCH --clusters=setonix
 #SBATCH --nodes=1
-#SBATCH --output=/astro/mwasci/tfranzen/generate_pos.o%A
-#SBATCH --error=/astro/mwasci/tfranzen/generate_pos.e%A
-#SBATCH --export=NONE
+#SBATCH --output=/astro/mwasci/software/kross/GLEAM-X-pipeline/log_garrawarla/generate_pos.o%A
+#SBATCH --error/astro/mwasci/software/kross/GLEAM-X-pipeline/log_garrawarla/generate_pos.e%A
+#SBATCH --export=all
 
 echo "Reminder on this branch this is not needed. Exiting. "
 exit 1
 
 module load singularity
 echo $SINGULARITY_BINDPATH
-export containerImage=/astro/mwasci/tgalvin/gleamx_testing_small.img
+export containerImage=/astro/mwasci/kross/GLEAM-X-pipeline/gleamx_container.img
 
 start_time=$(date +%s)
 
@@ -61,7 +61,7 @@ duration=$(echo "$end_time-$start_time" | bc -l)
 echo "Total runtime = $duration sec"
 
 # Move output and error files to output directory
-root=/astro/mwasci/$USER/generate_pos
-mv $root.o${SLURM_JOB_ID} $root.e${SLURM_JOB_ID} .
+# root=/astro/mwasci/$USER/generate_pos
+# mv $root.o${SLURM_JOB_ID} $root.e${SLURM_JOB_ID} .
 
 exit 0
