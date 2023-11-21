@@ -15,7 +15,7 @@
 set -x 
 module load singularity
 source /astro/mwasci/software/kross/GLEAM-X-pipeline/GLEAM-X-pipeline-garrawarla.profile
-echo $SINGULARITY_BINDPATH
+# echo $SINGULARITY_BINDPATH
 export containerImage=/astro/mwasci/kross/GLEAM-X-pipeline/gleamx_container.img
 
 start_time=$(date +%s)
@@ -55,7 +55,7 @@ output_dir = $output_dir
 EOPAR
 
 # Run Python script to generate RA and Dec positions
-singularity exec -B "$MYCODE" $containerImage $MYCODE/generate_pos.py --nsrc=$nsrc --region=$region --sep_min=$sep_min source_pos.txt
+singularity exec -B "/astro/mwasci/software/kross/Completeness-GLEAMX_DRII/" $containerImage $MYCODE/generate_pos.py --nsrc=$nsrc --region=$region --sep_min=$sep_min source_pos.txt
 
 end_time=$(date +%s)
 duration=$(echo "$end_time-$start_time" | bc -l)
