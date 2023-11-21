@@ -12,8 +12,9 @@
 
 # echo "Reminder on this branch this is not needed. Exiting. "
 # exit 1
-
+set -x 
 module load singularity
+source /astro/mwasci/software/kross/GLEAM-X-pipeline/GLEAM-X-pipeline-garrawarla.profile
 echo $SINGULARITY_BINDPATH
 export containerImage=/astro/mwasci/kross/GLEAM-X-pipeline/gleamx_container.img
 
