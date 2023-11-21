@@ -15,7 +15,7 @@ imageset_dir=/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims/
 
 export GLEAMX="${outdir}"
 export MYCODE=/astro/mwasci/software/kross/Completeness-GLEAMX_DRII/
-export NCPUS=38
+export NCPUS=10
 export CONTAINER=/astro/mwasci/kross/GLEAM-X-pipeline/gleamx_container.img
 
 # set -x
@@ -46,7 +46,7 @@ mkdir "${GLEAMX}/input_images"
 #     fi
 # done
 
-sbatch --time=06:00:00 $MYCODE/generate_pos.sh --ntasks-per-node=1 nsrc=${nsrc} region=${region} sep_min=5 output_dir=$GLEAMX/source_pos
+# sbatch --time=06:00:00 --ntasks-per-node=1 $MYCODE/generate_pos.sh ${nsrc} ${region} 5 $GLEAMX/source_pos
 
 
 "$MYCODE"/generate_fluxes.sh \
