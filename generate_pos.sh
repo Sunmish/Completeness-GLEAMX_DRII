@@ -2,9 +2,9 @@
 
 # Generate list of random RA and Dec positions in specified region of sky
 
-#SBATCH --account=pawsey0272
-#SBATCH --partition=work
-#SBATCH --clusters=setonix
+#SBATCH --account=mwasci
+#SBATCH --partition=workq
+#SBATCH --clusters=garrawarla
 #SBATCH --nodes=1
 #SBATCH --output=/astro/mwasci/software/kross/GLEAM-X-pipeline/log_garrawarla/generate_pos.o%A
 #SBATCH --error=/astro/mwasci/software/kross/GLEAM-X-pipeline/log_garrawarla/generate_pos.e%A
