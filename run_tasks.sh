@@ -49,13 +49,13 @@ mkdir "${GLEAMX}/input_images"
 # sbatch --time=06:00:00 --ntasks-per-node=1 $MYCODE/generate_pos.sh ${nsrc} ${region} 5 $GLEAMX/source_pos
 
 
-"$MYCODE"/generate_fluxes.sh \
-$nsrc \
-$region \
-$sep_min \
-$flux \
-$nfiles \
-$outdir
+# "$MYCODE"/generate_fluxes.sh \
+# $nsrc \
+# $region \
+# $sep_min \
+# $flux \
+# $nfiles \
+# $outdir
 
 
 if [[ $? -ne 0 ]]
@@ -65,7 +65,7 @@ then
 fi
 
 # We will be blocking until we are finished
-msg=$(sbatch \
+msg=($(sbatch \
     --array 1-$nfiles \
     --time 4:00:00 \
     --ntasks-per-node $NCPUS \
@@ -73,30 +73,31 @@ msg=$(sbatch \
     -o "${outdir}/inject_source.o%A_a" \
     -e "${outdir}/inject_source.e%A_a" \
     "$MYCODE/inject_sources.sh" \
-    input_map_dir="${GLEAMX}/input_images" \
-    input_sources="${GLEAMX}/source_pos/source_pos.txt" \
-    flux_dir="${GLEAMX}/fluxes" \
-    sigma=4.0 \
-    output_dir="${GLEAMX}/inject" \
-imageset_name="${imageset}")
+    "${GLEAMX}/input_images" \
+    "${GLEAMX}/source_pos/source_pos.txt" \
+    "${GLEAMX}/fluxes" \
+    4.0 \
+    "${GLEAMX}/inject" \
+"${imageset}"))
 
-echo "$msg"
+jobid=${msg[3]}
+# echo "$msg"
 id=$(echo "$msg" | cut -d ' ' -f3)
 
 msg=$(sbatch \
     --time 1:00:00 \
-    --dependency "afterok:$id" \
+    --dependency "afterok:$jobid" \
     --ntasks-per-node $NCPUS \
     --export ALL \
     -o "${outdir}/cmp_map.o%A" \
     -e "${outdir}/cmp_map.e%A" \
     "$MYCODE"/make_cmp_map.sh \
-    injected_sources="${GLEAMX}/source_pos/source_pos.txt" \
-    detected_sources="${GLEAMX}/inject" \
-    flux="$flux" \
-    template_map="${GLEAMX}/input_images/${imageset}_projpsf_psf.fits" \
-    region="${region}" \
-    rad=6 \
-output_dir="${GLEAMX}/results")
+    "${GLEAMX}/source_pos/source_pos.txt" \
+    "${GLEAMX}/inject" \
+    "$flux" \
+    "${GLEAMX}/input_images/${imageset}_projpsf_psf.fits" \
+    "${region}" \
+    6 \
+"${GLEAMX}/results")
 
 echo "$msg"
