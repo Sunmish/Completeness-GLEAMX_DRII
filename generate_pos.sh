@@ -7,7 +7,7 @@
 #SBATCH --clusters=setonix
 #SBATCH --nodes=1
 #SBATCH --output=/astro/mwasci/software/kross/GLEAM-X-pipeline/log_garrawarla/generate_pos.o%A
-#SBATCH --error/astro/mwasci/software/kross/GLEAM-X-pipeline/log_garrawarla/generate_pos.e%A
+#SBATCH --error=/astro/mwasci/software/kross/GLEAM-X-pipeline/log_garrawarla/generate_pos.e%A
 #SBATCH --export=all
 
 echo "Reminder on this branch this is not needed. Exiting. "
