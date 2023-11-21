@@ -55,7 +55,7 @@ output_dir = $output_dir
 EOPAR
 
 # Run Python script to generate RA and Dec positions
-singularity exec $containerImage $MYCODE/generate_pos.py --nsrc=$nsrc --region=$region --sep_min=$sep_min source_pos.txt
+singularity exec -B "$MYCODE" $containerImage $MYCODE/generate_pos.py --nsrc=$nsrc --region=$region --sep_min=$sep_min source_pos.txt
 
 end_time=$(date +%s)
 duration=$(echo "$end_time-$start_time" | bc -l)
