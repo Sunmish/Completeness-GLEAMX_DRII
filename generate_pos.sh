@@ -55,7 +55,7 @@ output_dir = $output_dir
 EOPAR
 
 # Run Python script to generate RA and Dec positions
-srun singularity exec -B "/astro/mwasci/software/kross/Completeness-GLEAMX_DRII/" $containerImage /astro/mwasci/software/kross/Completeness-GLEAMX_DRII/generate_pos.py --nsrc=$nsrc --region=$region --sep_min=$sep_min source_pos.txt
+srun singularity exec -B "/astro/mwasci/software/kross/Completeness-GLEAMX_DRII/" $containerImage /astro/mwasci/software/kross/Completeness-GLEAMX_DRII/generate_pos.py --nsrc=$nsrc --region=$region --sep-min=$sep_min source_pos.txt
 
 end_time=$(date +%s)
 duration=$(echo "$end_time-$start_time" | bc -l)
