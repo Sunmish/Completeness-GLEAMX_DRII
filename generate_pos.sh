@@ -10,8 +10,8 @@
 #SBATCH --error=/astro/mwasci/software/kross/GLEAM-X-pipeline/log_garrawarla/generate_pos.e%A
 #SBATCH --export=all
 
-echo "Reminder on this branch this is not needed. Exiting. "
-exit 1
+# echo "Reminder on this branch this is not needed. Exiting. "
+# exit 1
 
 module load singularity
 echo $SINGULARITY_BINDPATH
