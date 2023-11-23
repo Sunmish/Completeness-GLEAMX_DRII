@@ -32,7 +32,7 @@ then
     mkdir -p "${outdir}"
 fi
 
-mkdir "${GLEAMX}/input_images"
+# mkdir "${GLEAMX}/input_images"
 
 #TODO: See how well this works with symlinks. Need to be sure the container can follow them.
 # for suffix in "" "_bkg" "_rms" "_projpsf_psf"
@@ -49,13 +49,13 @@ mkdir "${GLEAMX}/input_images"
 # sbatch --time=06:00:00 --ntasks-per-node=1 $MYCODE/generate_pos.sh ${nsrc} ${region} 5 $GLEAMX/source_pos
 
 
-# "$MYCODE"/generate_fluxes.sh \
-# $nsrc \
-# $region \
-# $sep_min \
-# $flux \
-# $nfiles \
-# $outdir
+"$MYCODE"/generate_fluxes.sh \
+$nsrc \
+$region \
+$sep_min \
+$flux \
+$nfiles \
+$outdir
 
 
 if [[ $? -ne 0 ]]
@@ -70,8 +70,8 @@ msg=($(sbatch \
     --time 4:00:00 \
     --ntasks-per-node $NCPUS \
     --export ALL \
-    -o "${outdir}/inject_source.o%A_a" \
-    -e "${outdir}/inject_source.e%A_a" \
+    -o "${outdir}/inject_source.o%A_%a" \
+    -e "${outdir}/inject_source.e%A_%a" \
     "$MYCODE/inject_sources.sh" \
     "${GLEAMX}/input_images" \
     "${GLEAMX}/source_pos/source_pos.txt" \
