@@ -102,7 +102,7 @@ singularity exec \
 --nsrc="$nsrc" \
 --region="$region" \
 --sep-min="$sep_min" \
-"${pos_outdir}/source_pos.txt"
+"${output_dir}/source_pos.txt"
 
 cd "${basedir}" || exit 1
 mkdir "${flux_outdir}"
