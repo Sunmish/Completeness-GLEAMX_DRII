@@ -18,7 +18,7 @@ export MYCODE=/astro/mwasci/software/kross/Completeness-GLEAMX_DRII/
 export NCPUS=10
 export CONTAINER=/astro/mwasci/kross/GLEAM-X-pipeline/gleamx_container.img
 
-# set -x
+set -x
 
 if [[ -z ${MYCODE} ]]
 then
@@ -49,40 +49,40 @@ fi
 # sbatch --time=06:00:00 --ntasks-per-node=1 $MYCODE/generate_pos.sh ${nsrc} ${region} 5 $GLEAMX/source_pos
 
 
-# "$MYCODE"/generate_fluxes.sh \
-# $nsrc \
-# $region \
-# $sep_min \
-# $flux \
-# $nfiles \
-# $outdir
+"$MYCODE"/generate_fluxes.sh \
+$nsrc \
+$region \
+$sep_min \
+$flux \
+$nfiles \
+$outdir
 
 
-# if [[ $? -ne 0 ]]
-# then
-#     echo "Completeness simulation set up failed. Aborting."
-#     exit 1
-# fi
+if [[ $? -ne 0 ]]
+then
+    echo "Completeness simulation set up failed. Aborting."
+    exit 1
+fi
 
-# We will be blocking until we are finished
-# msg=($(sbatch \
-#     --array 1-$nfiles \
-#     --time 4:00:00 \
-#     --ntasks-per-node $NCPUS \
-#     --export ALL \
-#     -o "${outdir}/inject_source.o%A_%a" \
-#     -e "${outdir}/inject_source.e%A_%a" \
-#     "$MYCODE/inject_sources.sh" \
-#     "${GLEAMX}/input_images" \
-#     "${GLEAMX}/source_pos/source_pos.txt" \
-#     "${GLEAMX}/fluxes" \
-#     4.0 \
-#     "${GLEAMX}/inject" \
-# "${imageset}"))
+We will be blocking until we are finished
+msg=($(sbatch \
+    --array 1-$nfiles \
+    --time 4:00:00 \
+    --ntasks-per-node $NCPUS \
+    --export ALL \
+    -o "${outdir}/inject_source.o%A_%a" \
+    -e "${outdir}/inject_source.e%A_%a" \
+    "$MYCODE/inject_sources.sh" \
+    "${GLEAMX}/input_images" \
+    "${GLEAMX}/source_pos/source_pos.txt" \
+    "${GLEAMX}/fluxes" \
+    4.0 \
+    "${GLEAMX}/inject" \
+"${imageset}"))
 
-# jobid=${msg[3]}
-# # echo "$msg"
-# id=$(echo "$msg" | cut -d ' ' -f3)
+jobid=${msg[3]}
+# echo "$msg"
+id=$(echo "$msg" | cut -d ' ' -f3)
 
 msg=$(sbatch \
     --time 1:00:00 \
