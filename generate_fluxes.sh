@@ -96,7 +96,7 @@ cd "${pos_outdir}" || exit 1
 
 # Run Python script to generate RA and Dec positions
 singularity exec \
--B "$MYCODE" \
+-B "$MYCODE,$output_dir,$pos_outdir,$flux_outdir" \
 "$CONTAINER" \
 "$MYCODE/generate_pos.py" \
 --nsrc="$nsrc" \
