@@ -59,7 +59,7 @@ EOPAR
 
 # Run Python script
 singularity exec \
--B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
+-B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/,$MYCODE" \
 "$CONTAINER" \
 "$MYCODE/make_cmp_map.py" \
 --flux="$flux" \
