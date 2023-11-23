@@ -75,7 +75,7 @@ msg=($(sbatch \
     "$MYCODE/inject_sources.sh" \
     "${GLEAMX}/input_images" \
     "${GLEAMX}/source_pos/source_pos.txt" \
-    "${GLEAMX}/fluxes" \
+    "${GLEAMX}/source_pos/fluxes" \
     4.0 \
     "${GLEAMX}/inject" \
 "${imageset}"))
@@ -101,3 +101,4 @@ msg=($(sbatch \
 "${GLEAMX}/results"))
 
 # echo "$msg"
+set +x 
