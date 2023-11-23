@@ -26,11 +26,11 @@ then
     return 1
 fi
 
-if [[ ! -d $outdir ]]
-then
-    echo "Making directory ${outdir}"
-    mkdir -p "${outdir}"
-fi
+# if [[ ! -d $outdir ]]
+# then
+#     echo "Making directory ${outdir}"
+#     mkdir -p "${outdir}"
+# fi
 
 mkdir "${GLEAMX}/input_images"
 
@@ -46,8 +46,8 @@ do
     fi
 done
 
-msg=($(sbatch --time=06:00:00 --ntasks-per-node=1 $MYCODE/generate_pos.sh ${nsrc} ${region} 5 $GLEAMX/source_pos))
-jobid=${msg[3]}
+# msg=($(sbatch --time=06:00:00 --ntasks-per-node=1 $MYCODE/generate_pos.sh ${nsrc} ${region} 5 $GLEAMX/source_pos))
+# jobid=${msg[3]}
 
 "$MYCODE/generate_fluxes.sh" \
 $nsrc \

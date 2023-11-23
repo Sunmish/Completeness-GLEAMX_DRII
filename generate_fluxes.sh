@@ -65,12 +65,10 @@ flux_outdir="${output_dir}/fluxes"
 
 if [[ -e "${pos_outdir}" ]]; then
     echo "Error: Output directory ${pos_outdir} already exists. Aborting."
-    exit 1
 fi
 
 if [[ -e "${flux_outdir}" ]]; then
     echo "Error: Output directory ${flux_outdir} already exists. Aborting."
-    exit 1
 fi
 
 if [[ ! -e "${output_dir}" ]]
