@@ -68,7 +68,6 @@ fi
 msg=($(sbatch \
     --array 1-$nfiles \
     --time 4:00:00 \
-    --dependency "afterok:$jobid" \
     --ntasks-per-node $NCPUS \
     --export ALL \
     -o "${outdir}/inject_source.o%A_%a" \
