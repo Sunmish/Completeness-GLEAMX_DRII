@@ -242,7 +242,7 @@ for ((i=1; i<=($nflux); i++ )); do
     
     # Add simulated sources to real map
     singularity exec \
-    -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
+    -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/,${input_map_dir}" \
     "$CONTAINER" \
     AeRes \
     -c aegean_source_list.vot \
