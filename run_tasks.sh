@@ -88,6 +88,7 @@ id=$(echo "$msg" | cut -d ' ' -f3)
 msg=($(sbatch \
     --time 1:00:00 \
     --ntasks-per-node $NCPUS \
+    --dependency "afterok:$jobid" \
     --export ALL \
     -o "${outdir}/cmp_map.o%A" \
     -e "${outdir}/cmp_map.e%A" \
