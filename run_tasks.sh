@@ -2,7 +2,7 @@
 
 # A simple helper script to string together the completeness tasks that need to be run.
 
-cluster=setonix
+cluster=garrawarla
 nsrc=90000
 region=310,90,-90,30
 flux=-3,-0.5,0.1
@@ -49,20 +49,20 @@ fi
 # sbatch --time=06:00:00 --ntasks-per-node=1 $MYCODE/generate_pos.sh ${nsrc} ${region} 5 $GLEAMX/source_pos
 
 
-"$MYCODE"/generate_fluxes.sh \
-$nsrc \
-$region \
-$sep_min \
-$flux \
-$nfiles \
-$outdir
+# "$MYCODE"/generate_fluxes.sh \
+# $nsrc \
+# $region \
+# $sep_min \
+# $flux \
+# $nfiles \
+# $outdir
 
 
-if [[ $? -ne 0 ]]
-then
-    echo "Completeness simulation set up failed. Aborting."
-    exit 1
-fi
+# if [[ $? -ne 0 ]]
+# then
+#     echo "Completeness simulation set up failed. Aborting."
+#     exit 1
+# fi
 
 # We will be blocking until we are finished
 msg=($(sbatch \
