@@ -32,24 +32,24 @@ then
     mkdir -p "${outdir}"
 fi
 
-# mkdir "${GLEAMX}/input_images"
+mkdir "${GLEAMX}/input_images"
 
-#TODO: See how well this works with symlinks. Need to be sure the container can follow them.
-# for suffix in "" "_bkg" "_rms" "_projpsf_psf"
-# do
-#     if [[ -e "${imageset_dir}/${imageset}${suffix}.fits" ]]
-#     then
-#         cp -v "${imageset_dir}/${imageset}${suffix}.fits" "${GLEAMX}/input_images"
-#     else
-#         echo "Could not find ${imageset_dir}/${imageset}${suffix}.fits. Exiting. "
-#         exit 1
-#     fi
-# done
+# TODO: See how well this works with symlinks. Need to be sure the container can follow them.
+for suffix in "" "_bkg" "_rms" "_projpsf_psf"
+do
+    if [[ -e "${imageset_dir}/${imageset}${suffix}.fits" ]]
+    then
+        cp -v "${imageset_dir}/${imageset}${suffix}.fits" "${GLEAMX}/input_images"
+    else
+        echo "Could not find ${imageset_dir}/${imageset}${suffix}.fits. Exiting. "
+        exit 1
+    fi
+done
 
-# sbatch --time=06:00:00 --ntasks-per-node=1 $MYCODE/generate_pos.sh ${nsrc} ${region} 5 $GLEAMX/source_pos
+msg=($(sbatch --time=06:00:00 --ntasks-per-node=1 $MYCODE/generate_pos.sh ${nsrc} ${region} 5 $GLEAMX/source_pos))
+jobid=${msg[3]}
 
-
-"$MYCODE"/generate_fluxes.sh \
+"$MYCODE/generate_fluxes.sh" \
 $nsrc \
 $region \
 $sep_min \
@@ -64,10 +64,11 @@ then
     exit 1
 fi
 
-We will be blocking until we are finished
+# We will be blocking until we are finished
 msg=($(sbatch \
     --array 1-$nfiles \
     --time 4:00:00 \
+    --dependency "afterok:$jobid" \
     --ntasks-per-node $NCPUS \
     --export ALL \
     -o "${outdir}/inject_source.o%A_%a" \
@@ -84,7 +85,7 @@ jobid=${msg[3]}
 # echo "$msg"
 id=$(echo "$msg" | cut -d ' ' -f3)
 
-msg=$(sbatch \
+msg=($(sbatch \
     --time 1:00:00 \
     --ntasks-per-node $NCPUS \
     --export ALL \
@@ -97,6 +98,6 @@ msg=$(sbatch \
     "${GLEAMX}/input_images/${imageset}_projpsf_psf.fits" \
     "${region}" \
     6 \
-"${GLEAMX}/results")
+"${GLEAMX}/results"))
 
-echo "$msg"
+# echo "$msg"
