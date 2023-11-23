@@ -46,7 +46,7 @@ do
     fi
 done
 
-# msg=($(sbatch --time=06:00:00 --ntasks-per-node=1 $MYCODE/generate_pos.sh ${nsrc} ${region} 5 $GLEAMX/source_pos))
+# msg=($(sbatch --time=06:00:00 --dependency "afterok:$jobid" --ntasks-per-node=1 $MYCODE/generate_pos.sh ${nsrc} ${region} 5 $GLEAMX/source_pos))
 # jobid=${msg[3]}
 
 "$MYCODE/generate_fluxes.sh" \
@@ -55,7 +55,7 @@ $region \
 $sep_min \
 $flux \
 $nfiles \
-$outdir
+"$outdir/source_pos"
 
 
 if [[ $? -ne 0 ]]
