@@ -38,8 +38,9 @@ fi
 
 # Create output directory
 if [ -e "${output_dir}" ]; then
-    echo "Error: Output directory $output_dir already exists. Aborting."
-    exit 1
+    echo "Error: Output directory $output_dir already exists"
+    echo "Not remaking directory" 
+    cd "${output_dir}"
 else
     mkdir "${output_dir}"
     cd "${output_dir}" || exit 1
@@ -58,6 +59,7 @@ EOPAR
 
 # Run Python script
 singularity exec $CONTAINER \
+-B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
 "$MYCODE/make_cmp_map.py" \
 --flux="$flux" \
 --region="$region" \
