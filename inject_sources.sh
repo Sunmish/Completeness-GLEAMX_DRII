@@ -42,8 +42,8 @@ fi
 
 # Create flux output directory
 if [ -e "${output_dir}/flux${SLURM_ARRAY_TASK_ID}" ]; then
-    echo "Error: Output directory $output_dir/flux${SLURM_ARRAY_TASK_ID} already exists. Aborting."
-    exit 1
+    echo "Error: Output directory $output_dir/flux${SLURM_ARRAY_TASK_ID} already exists. Not remaking" 
+    cd "${output_dir}/flux${SLURM_ARRAY_TASK_ID}"
 else
     mkdir "${output_dir}/flux${SLURM_ARRAY_TASK_ID}"
     cd "${output_dir}/flux${SLURM_ARRAY_TASK_ID}" || exit
