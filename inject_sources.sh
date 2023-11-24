@@ -115,7 +115,7 @@ then
     "$CONTAINER" \
     aegean \
     --progress \
-    --cores=$ncpus \
+    --cores=20 \
     --out=aegean_list.txt \
     --table=aegean_list.vot \
     --noise="$input_map_rms" \
@@ -253,12 +253,12 @@ for ((i=1; i<=($nflux); i++ )); do
     rm -f sim_map.fits aegean_source_list.vot
     
     # Run Aegean on sim_and_real_map.fits (this is the real image + simulated sources); use existing rms and background images
-    srun -m block:block:block -c $ncpus singularity exec \
+    srun -m block:block:block -c 20 singularity exec \
     -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
     "$CONTAINER" \
     aegean \
     --progress \
-    --cores=$ncpus \
+    --cores=20 \
     --out=aegean_SIM_list.txt \
     --table=aegean_SIM_list.vot \
     --noise="$input_map_rms" \
@@ -272,7 +272,7 @@ for ((i=1; i<=($nflux); i++ )); do
     rm -f sim_and_real_map_flux${s}.fits
     
     # Match sources detected in the simulated image with the list of real & simulated sources for the image
-    srun -m block:block:block -c $ncpus singularity exec \
+    srun -m block:block:block -c 20 singularity exec \
     -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
     "$CONTAINER" \
     stilts tskymatch2 \

@@ -67,11 +67,11 @@ fi
 # We will be blocking until we are finished
 msg=($(sbatch \
     --array 1-$nfiles \
-    --time 4:00:00 \
+    --time 24:00:00 \
     --ntasks-per-node 1 \
-    --cpus-per-task $NCPUS \
+    --cpus-per-task 20 \
     --export ALL \
-    --mem 150G \
+    --mem 350G \
     -o "${outdir}/inject_source.o%A_%a" \
     -e "${outdir}/inject_source.e%A_%a" \
     "$MYCODE/inject_sources.sh" \
