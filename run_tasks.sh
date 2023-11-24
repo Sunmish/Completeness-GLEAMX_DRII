@@ -70,7 +70,7 @@ msg=($(sbatch \
     --time 4:00:00 \
     --ntasks-per-node $NCPUS \
     --export ALL \
-    --mem 90G \
+    --mem 150G \
     -o "${outdir}/inject_source.o%A_%a" \
     -e "${outdir}/inject_source.e%A_%a" \
     "$MYCODE/inject_sources.sh" \
@@ -90,7 +90,7 @@ msg=($(sbatch \
     --ntasks-per-node $NCPUS \
     --dependency "afterok:$jobid" \
     --export ALL \
-    --mem 90G \
+    --mem 150G \
     -o "${outdir}/cmp_map.o%A" \
     -e "${outdir}/cmp_map.e%A" \
     "$MYCODE"/make_cmp_map.sh \
