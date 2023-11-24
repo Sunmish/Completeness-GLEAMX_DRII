@@ -68,7 +68,8 @@ fi
 msg=($(sbatch \
     --array 1-$nfiles \
     --time 4:00:00 \
-    --ntasks-per-node $NCPUS \
+    --ntasks-per-node 1 \
+    --ncpus-per-task $NCPUS \
     --export ALL \
     --mem 150G \
     -o "${outdir}/inject_source.o%A_%a" \
@@ -87,7 +88,8 @@ id=$(echo "$msg" | cut -d ' ' -f3)
 
 msg=($(sbatch \
     --time 1:00:00 \
-    --ntasks-per-node $NCPUS \
+    --ntasks-per-node 1 \
+    --ncpus-per-task $NCPUS \
     --dependency "afterok:$jobid" \
     --export ALL \
     --mem 150G \
