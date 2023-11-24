@@ -110,7 +110,7 @@ pow(){
 if [[ ! -e "${input_map_comp}" ]]
 then
     # Run Aegean on real image
-    singularity exec \
+    srun -m block:block:block -c $ncpus singularity exec \
     -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
     "$CONTAINER" \
     aegean \
@@ -139,7 +139,7 @@ fi
 rm -f aegean_list.txt
 
 # Select RA and Dec columns in Aegean list of real sources; add type=1 col to indicate that these are real sources
-singularity exec \
+srun -m block:block:block -c $ncpus singularity exec \
 -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
 "$CONTAINER" \
 stilts tpipe \
@@ -154,7 +154,7 @@ cmd='keepcols "ra dec type"'
 rm -f "${aegean_comp}"
 
 # Select RA and Dec columns in list of simulated sources; add type=0 col to indicate these are simulated sources
-singularity exec \
+srun -m block:block:block -c $ncpus singularity exec \
 -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
 "$CONTAINER" \
 stilts tpipe \
@@ -167,7 +167,7 @@ cmd='addcol "type" 0' \
 cmd='keepcols "ra dec type"'
 
 # Concatenate real and simulated source lists
-singularity exec \
+srun -m block:block:block -c $ncpus singularity exec \
 -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
 "$CONTAINER" \
 stilts tcat \
@@ -187,7 +187,7 @@ for ((i=1; i<=($nflux); i++ )); do
     s_lin=$( pow 10 $s ) # convert flux to linear space
     
     # Get PSF size and blurring factor at the location of each simulated source
-    singularity exec \
+    srun -m block:block:block -c $ncpus singularity exec \
     -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/,$MYCODE" \
     "$CONTAINER" \
     "$MYCODE/calc_r_ratio_cmp.py" \
@@ -202,7 +202,7 @@ for ((i=1; i<=($nflux); i++ )); do
     # Since the map in which we will inject the point sources has already been rescaled to account for ionospheric smearing,
     # the peak fluxes of the injected sources should NOT be suppressed by the blurring factor
     # (i.e. the peak fluxes should be equal to the integrated fluxes)
-    singularity exec \
+    srun -m block:block:block -c $ncpus singularity exec \
     -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
     "$CONTAINER" \
     stilts tpipe \
@@ -241,7 +241,7 @@ for ((i=1; i<=($nflux); i++ )); do
     cmd='delcols "RA Dec S bmaj bmin bpa R"'
     
     # Add simulated sources to real map
-    singularity exec \
+    srun -m block:block:block -c $ncpus singularity exec \
     -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/,${input_map_dir}" \
     "$CONTAINER" \
     AeRes \
@@ -253,7 +253,7 @@ for ((i=1; i<=($nflux); i++ )); do
     rm -f sim_map.fits aegean_source_list.vot
     
     # Run Aegean on sim_and_real_map.fits (this is the real image + simulated sources); use existing rms and background images
-    singularity exec \
+    srun -m block:block:block -c $ncpus singularity exec \
     -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
     "$CONTAINER" \
     aegean \
@@ -272,7 +272,7 @@ for ((i=1; i<=($nflux); i++ )); do
     rm -f sim_and_real_map_flux${s}.fits
     
     # Match sources detected in the simulated image with the list of real & simulated sources for the image
-    singularity exec \
+    srun -m block:block:block -c $ncpus singularity exec \
     -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
     "$CONTAINER" \
     stilts tskymatch2 \
@@ -292,7 +292,7 @@ for ((i=1; i<=($nflux); i++ )); do
     rm -f aegean_SIM_list_comp.vot
     
     # Select sources in match_list.txt that have type=0
-    singularity exec \
+    srun -m block:block:block -c $ncpus singularity exec \
     -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
     "$CONTAINER" \
     stilts tpipe \

@@ -58,7 +58,7 @@ output_dir = $output_dir
 EOPAR
 
 # Run Python script
-singularity exec \
+ssrun -m block:block:block -c $ncpus ingularity exec \
 -B "$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/,$MYCODE" \
 "$CONTAINER" \
 "$MYCODE/make_cmp_map.py" \
