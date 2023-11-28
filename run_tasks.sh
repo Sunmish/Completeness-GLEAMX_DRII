@@ -49,20 +49,20 @@ done
 # msg=($(sbatch --time=06:00:00 --dependency "afterok:$jobid" --ntasks-per-node=1 $MYCODE/generate_pos.sh ${nsrc} ${region} 5 $GLEAMX/source_pos))
 # jobid=${msg[3]}
 
-"$MYCODE/generate_fluxes.sh" \
-$nsrc \
-$region \
-$sep_min \
-$flux \
-$nfiles \
-"$outdir/source_pos"
+# "$MYCODE/generate_fluxes.sh" \
+# $nsrc \
+# $region \
+# $sep_min \
+# $flux \
+# $nfiles \
+# "$outdir/source_pos"
 
 
-if [[ $? -ne 0 ]]
-then
-    echo "Completeness simulation set up failed. Aborting."
-    exit 1
-fi
+# if [[ $? -ne 0 ]]
+# then
+#     echo "Completeness simulation set up failed. Aborting."
+#     exit 1
+# fi
 
 # We will be blocking until we are finished
 msg=($(sbatch \

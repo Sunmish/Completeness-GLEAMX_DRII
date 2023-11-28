@@ -107,81 +107,81 @@ pow(){
 # and simulated source in the image. A 3rd col gives the source type (1 for real, 0 for simulated).
 # The list of real sources is obtained by running Aegean on the image.
 
-if [[ ! -e "${input_map_comp}" ]]
-then
-    # Run Aegean on real image
-    srun -m block:block:block -c $ncpus singularity exec \
-    -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
-    "$CONTAINER" \
-    aegean \
-    --progress \
-    --cores=20 \
-    --out=aegean_list.txt \
-    --table=aegean_list.vot \
-    --noise="$input_map_rms" \
-    --background="$input_map_bkg" \
-    --seedclip="$sigma" \
-    --floodclip=4 \
-    --maxsummits=5 \
-    --psf="$input_map_psf" \
-    "$input_map"
+# if [[ ! -e "${input_map_comp}" ]]
+# then
+#     # Run Aegean on real image
+#     srun -m block:block:block -c $ncpus singularity exec \
+#     -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
+#     "$CONTAINER" \
+#     aegean \
+#     --progress \
+#     --cores=20 \
+#     --out=aegean_list.txt \
+#     --table=aegean_list.vot \
+#     --noise="$input_map_rms" \
+#     --background="$input_map_bkg" \
+#     --seedclip="$sigma" \
+#     --floodclip=4 \
+#     --maxsummits=5 \
+#     --psf="$input_map_psf" \
+#     "$input_map"
     
-    aegean_comp=aegean_list_comp.vot
-    iformat='votable'
-else
-    echo "Copying ${input_map_comp} to aegean_list.vot"
-    pwd
-    cp -v "${input_map_comp}" ./aegean_list_comp.fits
-    aegean_comp=aegean_list_comp.fits
-    iformat='fits'
-fi
+#     aegean_comp=aegean_list_comp.vot
+#     iformat='votable'
+# else
+#     echo "Copying ${input_map_comp} to aegean_list.vot"
+#     pwd
+#     cp -v "${input_map_comp}" ./aegean_list_comp.fits
+#     aegean_comp=aegean_list_comp.fits
+#     iformat='fits'
+# fi
 
-rm -f aegean_list.txt
+# rm -f aegean_list.txt
 
-# Select RA and Dec columns in Aegean list of real sources; add type=1 col to indicate that these are real sources
-srun -m block:block:block -c $ncpus singularity exec \
--B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
-"$CONTAINER" \
-stilts tpipe \
-ifmt="${iformat}" \
-in="${aegean_comp}" \
-ofmt=ascii \
-omode=out \
-out=t \
-cmd='addcol "type" 1' \
-cmd='keepcols "ra dec type"'
+# # Select RA and Dec columns in Aegean list of real sources; add type=1 col to indicate that these are real sources
+# srun -m block:block:block -c $ncpus singularity exec \
+# -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
+# "$CONTAINER" \
+# stilts tpipe \
+# ifmt="${iformat}" \
+# in="${aegean_comp}" \
+# ofmt=ascii \
+# omode=out \
+# out=t \
+# cmd='addcol "type" 1' \
+# cmd='keepcols "ra dec type"'
 
-rm -f "${aegean_comp}"
+# rm -f "${aegean_comp}"
 
-# Select RA and Dec columns in list of simulated sources; add type=0 col to indicate these are simulated sources
-srun -m block:block:block -c $ncpus singularity exec \
--B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
-"$CONTAINER" \
-stilts tpipe \
-ifmt=ascii \
-in="$input_sources" \
-ofmt=ascii \
-omode=out \
-out=t2 \
-cmd='addcol "type" 0' \
-cmd='keepcols "ra dec type"'
+# # Select RA and Dec columns in list of simulated sources; add type=0 col to indicate these are simulated sources
+# srun -m block:block:block -c $ncpus singularity exec \
+# -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
+# "$CONTAINER" \
+# stilts tpipe \
+# ifmt=ascii \
+# in="$input_sources" \
+# ofmt=ascii \
+# omode=out \
+# out=t2 \
+# cmd='addcol "type" 0' \
+# cmd='keepcols "ra dec type"'
 
-# Concatenate real and simulated source lists
-srun -m block:block:block -c $ncpus singularity exec \
--B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
-"$CONTAINER" \
-stilts tcat \
-ifmt=ascii \
-in=t \
-in=t2 \
-out=real_and_sim_list.txt
+# # Concatenate real and simulated source lists
+# srun -m block:block:block -c $ncpus singularity exec \
+# -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
+# "$CONTAINER" \
+# stilts tcat \
+# ifmt=ascii \
+# in=t \
+# in=t2 \
+# out=real_and_sim_list.txt
 
-rm -f t t2
+# rm -f t t2
 
 # ----------------------------------------------------------------
 
 # Loop over fluxes in flux_list
-for ((i=1; i<=($nflux); i++ )); do
+for ((i=5; i<=($nflux); i++ )); do
     
     s=${flux[$i]}
     s_lin=$( pow 10 $s ) # convert flux to linear space
