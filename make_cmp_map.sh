@@ -10,6 +10,14 @@ then
     exit 1
 fi
 
+if [[ -n $NCPUS ]]
+then
+    ncpus=$NCPUS
+else
+    ncpus=18
+fi
+
+set -x
 start_time=$(date +%s)
 
 # Read input parameters
@@ -57,9 +65,11 @@ rad = $rad
 output_dir = $output_dir
 EOPAR
 
+echo "About to run the python script now" 
+
 # Run Python script
-ssrun -m block:block:block -c $ncpus ingularity exec \
--B "$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/,$MYCODE" \
+srun -m block:block:block -c $ncpus singularity exec \
+-B "$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims/,$MYCODE" \
 "$CONTAINER" \
 "$MYCODE/make_cmp_map.py" \
 --flux="$flux" \
@@ -73,6 +83,7 @@ end_time=$(date +%s)
 duration=$(echo "$end_time-$start_time" | bc -l)
 echo "Total runtime = $duration sec"
 
+set +x
 exit 0
 
 

@@ -3,7 +3,7 @@
 # A simple helper script to string together the completeness tasks that need to be run.
 
 cluster=garrawarla
-nsrc=90000
+nsrc=130000
 region=310,90,-90,30
 flux=-3,-0.5,0.1
 nfiles=6
@@ -26,18 +26,18 @@ then
     return 1
 fi
 
-# if [[ ! -d $outdir ]]
-# then
-#     echo "Making directory ${outdir}"
-#     mkdir -p "${outdir}"
-# fi
+if [[ ! -d $outdir ]]
+then
+    echo "Making directory ${outdir}"
+    mkdir -p "${outdir}"
+fi
 
 mkdir "${GLEAMX}/input_images"
 
 # TODO: See how well this works with symlinks. Need to be sure the container can follow them.
 for suffix in "" "_bkg" "_rms" "_projpsf_psf"
 do
-    if [[ -e "${imageset_dir}/${imageset}${suffix}.fits" ]]
+    if [[! -e "${imageset_dir}/${imageset}${suffix}.fits" ]]
     then
         cp -v "${imageset_dir}/${imageset}${suffix}.fits" "${GLEAMX}/input_images"
     else
@@ -49,20 +49,20 @@ done
 # msg=($(sbatch --time=06:00:00 --dependency "afterok:$jobid" --ntasks-per-node=1 $MYCODE/generate_pos.sh ${nsrc} ${region} 5 $GLEAMX/source_pos))
 # jobid=${msg[3]}
 
-# "$MYCODE/generate_fluxes.sh" \
-# $nsrc \
-# $region \
-# $sep_min \
-# $flux \
-# $nfiles \
-# "$outdir/source_pos"
+"$MYCODE/generate_fluxes.sh" \
+$nsrc \
+$region \
+$sep_min \
+$flux \
+$nfiles \
+"$outdir/"
 
 
-# if [[ $? -ne 0 ]]
-# then
-#     echo "Completeness simulation set up failed. Aborting."
-#     exit 1
-# fi
+if [[ $? -ne 0 ]]
+then
+    echo "Completeness simulation set up failed. Aborting."
+    exit 1
+fi
 
 # We will be blocking until we are finished
 msg=($(sbatch \

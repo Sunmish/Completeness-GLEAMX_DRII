@@ -181,7 +181,7 @@ pow(){
 # ----------------------------------------------------------------
 
 # Loop over fluxes in flux_list
-for ((i=5; i<=($nflux); i++ )); do
+for ((i=1; i<=($nflux); i++ )); do
     
     s=${flux[$i]}
     s_lin=$( pow 10 $s ) # convert flux to linear space
