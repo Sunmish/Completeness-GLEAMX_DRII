@@ -15,7 +15,7 @@ imageset_dir=/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims/
 
 export GLEAMX="${outdir}"
 export MYCODE=/astro/mwasci/software/kross/Completeness-GLEAMX_DRII/
-export NCPUS=10
+export NCPUS=38
 export CONTAINER=/astro/mwasci/kross/GLEAM-X-pipeline/gleamx_container.img
 
 set -x
@@ -37,12 +37,12 @@ mkdir "${GLEAMX}/input_images"
 # TODO: See how well this works with symlinks. Need to be sure the container can follow them.
 for suffix in "" "_bkg" "_rms" "_projpsf_psf"
 do
-    if [[! -e "${imageset_dir}/${imageset}${suffix}.fits" ]]
+    if [[-e "${imageset_dir}/${imageset}${suffix}.fits" ]]
     then
         cp -v "${imageset_dir}/${imageset}${suffix}.fits" "${GLEAMX}/input_images"
     else
         echo "Could not find ${imageset_dir}/${imageset}${suffix}.fits. Exiting. "
-        exit 1
+        return 1
     fi
 done
 
@@ -69,7 +69,7 @@ msg=($(sbatch \
     --array 1-$nfiles \
     --time 24:00:00 \
     --ntasks-per-node 1 \
-    --cpus-per-task 20 \
+    --cpus-per-task 38 \
     --export ALL \
     --mem 350G \
     -o "${outdir}/inject_source.o%A_%a" \
