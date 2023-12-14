@@ -98,6 +98,8 @@ ra_max = float(args.region.split(",")[1])
 dec_min = float(args.region.split(",")[2])
 dec_max = float(args.region.split(",")[3])
 
+dec_min_upper = float(-60)
+
 # Check RA and Dec ranges
 if (
     dec_min < -90.0
@@ -243,6 +245,21 @@ if args.template_map:
                     if p >= f:
                         print("%.0f" % p, "% complete")
                         f = f + step
+            # elif dec >= dec_min and dec <= dec_max: 
+            #     if (ra_max > ra_min and (ra >= ra_min and ra <= ra_max)) or (
+            #         ra_max < ra_min and (ra >= ra_min or ra <= ra_max)
+            #     ):
+            #         ref_pos = SkyCoord(ra * u.deg, dec * u.deg)
+            #         ninj_rad = count_sources(ref_pos, sky_inj, 20)
+            #         for i in range(0, sdim):
+            #             ndet_rad = count_sources(ref_pos, sky_det[i], 20)
+            #             cmp_cube[i, j, k] = ndet_rad / ninj_rad * 100.0
+
+            #         n = n + 1
+            #         p = (n / npix) * 100
+            #         if p >= f:
+            #             print("%.0f" % p, "% complete")
+            #             f = f + step              
 
     out = template
     out[0].header = hdr
