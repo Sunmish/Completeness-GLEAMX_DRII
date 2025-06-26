@@ -40,6 +40,8 @@ export GLEAMX="${outdir}"
 input="/scratch/mwasci/duchesst/processing/${TILE}/"
 imageset_dir="./"
 
+cd ${input} || exit 1
+
 ra_min=$(echo "${ra}-(0.5*${ra_size})" | bc -l)
 ra_max=$(echo "${ra}+(0.5*${ra_size})" | bc -l)
 dec_min=$(echo "${dec}-(0.5*${dec_size})" | bc -l)
