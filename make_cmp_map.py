@@ -111,9 +111,9 @@ if (
     print("Error: Dec range entered incorrectly. Aborting.")
     exit(1)
 
-if ra_min < 0.0 or ra_min > 360.0 or ra_max < 0.0 or ra_max > 360.0 or ra_min == ra_max:
-    print("Error: RA range entered incorrectly. Aborting.")
-    exit(1)
+# if ra_min < 0.0 or ra_min > 360.0 or ra_max < 0.0 or ra_max > 360.0 or ra_min == ra_max:
+#     print("Error: RA range entered incorrectly. Aborting.")
+#     exit(1)
 
 # Read flux parameter and create array with flux levels
 s_min = float(args.flux.split(",")[0])
