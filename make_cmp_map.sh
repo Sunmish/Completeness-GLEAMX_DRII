@@ -68,9 +68,7 @@ EOPAR
 echo "About to run the python script now" 
 
 # Run Python script
-srun -m block:block:block -c $ncpus singularity exec \
--B "$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims/,$MYCODE" \
-"$CONTAINER" \
+singularity exec -B "/mnt/" "$CONTAINER" \
 "$MYCODE/make_cmp_map.py" \
 --flux="$flux" \
 --region="$region" \

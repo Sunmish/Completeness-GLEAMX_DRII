@@ -61,7 +61,7 @@ for (ra,dec) in np.nditer((ra_list,dec_list)):
   a=mappix[0,y,x]
   b=mappix[1,y,x]
   c=mappix[2,y,x]
-  proj=1/m.cos(m.radians(z-dec))
+  proj=1  # already accounted for
   if a == a and b == b and c == c:
 # Convert a and b from deg to arcsec
     a=a*3600.0

@@ -97,7 +97,6 @@ cd "${pos_outdir}" || exit 1
 
 # Run Python script to generate RA and Dec positions
 singularity exec \
--B "$MYCODE,$output_dir,$pos_outdir" \
 "$CONTAINER" \
 "$MYCODE/generate_pos.py" \
 --nsrc="$nsrc" \
@@ -114,16 +113,16 @@ quotient=$((nflux/nfiles))
 remainder=$((nflux%nfiles))
 k=0
 for ((i=1; i<=($nfiles); i++ )); do
-    echo "# log10(flux/Jy)" > flux_list${i}.txt
+    echo "# log10(flux/Jy)" > flux_list.txt
     if [ $(echo "$i <= $remainder"|bc) -eq 1 ]; then
         n=$(echo "$quotient+1" | bc -l)
     else
         n=$quotient
     fi
-    echo "Writing flux_list${i}.txt"
+    echo "Writing flux_list.txt"
     for ((j=1; j<=($n); j++ )); do
         (( k++ ))
-        printf "%0.4f\n" ${s[$k]} >> flux_list${i}.txt
+        printf "%0.4f\n" ${s[$k]} >> flux_list.txt
     done
 done
 

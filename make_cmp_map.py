@@ -181,6 +181,8 @@ plt.tight_layout()
 plt.savefig(args.output_root + ".pdf")
 plt.close()
 
+import sys
+sys.exit(0)
 if args.template_map:
     print("Calculating completeness cube")
 

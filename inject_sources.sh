@@ -33,7 +33,7 @@ else
 fi
 
 # File containing list of simulated source fluxes
-flux_list=$flux_dir/flux_list${SLURM_ARRAY_TASK_ID}.txt
+flux_list=$flux_dir/flux_list.txt
 
 # Create main output directory
 if [ ! -e "${output_dir}" ]; then
@@ -69,7 +69,7 @@ input_map="${input_map_dir}/${imageset_name}.fits" # Potentially this may miss d
 input_map_comp="${input_map_dir}/${imageset_name}_comp.fits"
 input_map_rms="${input_map_dir}/${imageset_name}_rms.fits"
 input_map_bkg="${input_map_dir}/${imageset_name}_bkg.fits"
-input_map_psf="${input_map_dir}/${imageset_name}_projpsf_psf.fits"
+input_map_psf="${input_map_dir}/${imageset_name}_psfmap.fits"
 
 for file in "${input_map}" "${input_map_rms}" "${input_map_bkg}" "${input_map_psf}" "${input_sources}"; do
     if [ ! -e "${file}" ]; then
@@ -110,12 +110,11 @@ pow(){
 if [[ ! -e "${input_map_comp}" ]]
 then
     # Run Aegean on real image
-    srun -m block:block:block -c $ncpus singularity exec \
-    -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
-    "$CONTAINER" \
+singularity exec  "$CONTAINER" \
     aegean \
     --progress \
-    --cores=20 \
+    --cores=8 \
+    --nocov \
     --out=aegean_list.txt \
     --table=aegean_list.vot \
     --noise="$input_map_rms" \
@@ -139,9 +138,7 @@ fi
 rm -f aegean_list.txt
 
 # Select RA and Dec columns in Aegean list of real sources; add type=1 col to indicate that these are real sources
-srun -m block:block:block -c $ncpus singularity exec \
--B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
-"$CONTAINER" \
+singularity exec  "$CONTAINER" \
 stilts tpipe \
 ifmt="${iformat}" \
 in="${aegean_comp}" \
@@ -154,9 +151,7 @@ cmd='keepcols "ra dec type"'
 rm -f "${aegean_comp}"
 
 # Select RA and Dec columns in list of simulated sources; add type=0 col to indicate these are simulated sources
-srun -m block:block:block -c $ncpus singularity exec \
--B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
-"$CONTAINER" \
+singularity exec  "$CONTAINER" \
 stilts tpipe \
 ifmt=ascii \
 in="$input_sources" \
@@ -167,9 +162,7 @@ cmd='addcol "type" 0' \
 cmd='keepcols "ra dec type"'
 
 # Concatenate real and simulated source lists
-srun -m block:block:block -c $ncpus singularity exec \
--B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
-"$CONTAINER" \
+singularity exec  "$CONTAINER" \
 stilts tcat \
 ifmt=ascii \
 in=t \
@@ -187,9 +180,7 @@ for ((i=1; i<=($nflux); i++ )); do
     s_lin=$( pow 10 $s ) # convert flux to linear space
     
     # Get PSF size and blurring factor at the location of each simulated source
-    srun -m block:block:block -c $ncpus singularity exec \
-    -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/,$MYCODE" \
-    "$CONTAINER" \
+    singularity exec  "$CONTAINER" \
     "$MYCODE/calc_r_ratio_cmp.py" \
     --z=$z \
     --flux="$s_lin" \
@@ -202,10 +193,7 @@ for ((i=1; i<=($nflux); i++ )); do
     # Since the map in which we will inject the point sources has already been rescaled to account for ionospheric smearing,
     # the peak fluxes of the injected sources should NOT be suppressed by the blurring factor
     # (i.e. the peak fluxes should be equal to the integrated fluxes)
-    srun -m block:block:block -c $ncpus singularity exec \
-    -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
-    "$CONTAINER" \
-    stilts tpipe \
+    singularity exec  "$CONTAINER" stilts tpipe \
     ifmt=ascii \
     ofmt=votable \
     omode=out \
@@ -241,9 +229,7 @@ for ((i=1; i<=($nflux); i++ )); do
     cmd='delcols "RA Dec S bmaj bmin bpa R"'
     
     # Add simulated sources to real map
-    srun -m block:block:block -c $ncpus singularity exec \
-    -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/,${input_map_dir}" \
-    "$CONTAINER" \
+    singularity exec  "$CONTAINER" \
     AeRes \
     -c aegean_source_list.vot \
     -f "$input_map" \
@@ -253,12 +239,11 @@ for ((i=1; i<=($nflux); i++ )); do
     rm -f sim_map.fits aegean_source_list.vot
     
     # Run Aegean on sim_and_real_map.fits (this is the real image + simulated sources); use existing rms and background images
-    srun -m block:block:block -c 20 singularity exec \
-    -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
-    "$CONTAINER" \
+   singularity exec  "$CONTAINER" \
     aegean \
     --progress \
-    --cores=20 \
+    --cores=6 \
+    --nocov \
     --out=aegean_SIM_list.txt \
     --table=aegean_SIM_list.vot \
     --noise="$input_map_rms" \
@@ -272,9 +257,7 @@ for ((i=1; i<=($nflux); i++ )); do
     rm -f sim_and_real_map_flux${s}.fits
     
     # Match sources detected in the simulated image with the list of real & simulated sources for the image
-    srun -m block:block:block -c 20 singularity exec \
-    -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
-    "$CONTAINER" \
+    singularity exec  "$CONTAINER" \
     stilts tskymatch2 \
     in1=aegean_SIM_list_comp.vot \
     in2=real_and_sim_list.txt \
@@ -292,9 +275,7 @@ for ((i=1; i<=($nflux); i++ )); do
     rm -f aegean_SIM_list_comp.vot
     
     # Select sources in match_list.txt that have type=0
-    srun -m block:block:block -c $ncpus singularity exec \
-    -B "${output_dir}/flux${SLURM_ARRAY_TASK_ID},$input_map_dir,$output_dir,/astro/mwasci/kross/gleamx/GLEAMX_DRII/completeness_ims//source_pos/" \
-    "$CONTAINER" \
+    singularity exec  "$CONTAINER" \
     stilts tpipe \
     ifmt=ascii \
     in=match_list.txt \
