@@ -96,7 +96,7 @@ mkdir "${pos_outdir}"
 cd "${pos_outdir}" || exit 1
 
 # Run Python script to generate RA and Dec positions
-singularity exec \
+singularity exec ${BINDING} \
 "$CONTAINER" \
 "$MYCODE/generate_pos.py" \
 --nsrc="$nsrc" \
