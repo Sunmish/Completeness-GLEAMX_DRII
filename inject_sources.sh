@@ -113,15 +113,14 @@ then
 singularity exec  "$CONTAINER" \
     aegean \
     --progress \
-    --cores=8 \
+    --cores=12 \
     --nocov \
     --out=aegean_list.txt \
     --table=aegean_list.vot \
     --noise="$input_map_rms" \
     --background="$input_map_bkg" \
     --seedclip="$sigma" \
-    --floodclip=4 \
-    --maxsummits=5 \
+    --floodclip=3 \
     --psf="$input_map_psf" \
     "$input_map"
     
@@ -242,15 +241,14 @@ for ((i=1; i<=($nflux); i++ )); do
    singularity exec  "$CONTAINER" \
     aegean \
     --progress \
-    --cores=6 \
+    --cores=12 \
     --nocov \
     --out=aegean_SIM_list.txt \
     --table=aegean_SIM_list.vot \
     --noise="$input_map_rms" \
     --background="$input_map_bkg" \
     --seedclip="$sigma" \
-    --floodclip=4 \
-    --maxsummits=5 \
+    --floodclip=3 \
     --psf="$input_map_psf" "sim_and_real_map_flux${s}.fits"
     
     rm -f aegean_SIM_list.txt
