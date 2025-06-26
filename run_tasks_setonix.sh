@@ -33,7 +33,8 @@ dec=$(echo "$params" | awk -F',' '{print $3}')
 ra_size=$(echo "$params" | awk -F',' '{print $4}')
 dec_size=$(echo "$params" | awk -F',' '{print $5}')
 
-nsrc=$(echo "${SOURCE_DENSITY}*${ra_size}*${dec_size}" | bc -l)
+nsrc_float=$(echo "${SOURCE_DENSITY}*${ra_size}*${dec_size}" | bc -l)
+nsrc=${nsrc_float%.*}
 imageset="GLEAM300_${TILE}"
 outdir="/scratch/mwasci/duchesst/processing/${TILE}/completeness"
 export GLEAMX="${outdir}"
@@ -41,6 +42,9 @@ input="/scratch/mwasci/duchesst/processing/${TILE}/"
 imageset_dir="./"
 
 cd ${input} || exit 1
+if [ -e ${outdir} ]; then
+rm -r $outdir
+fi
 
 ra_min=$(echo "${ra}-(0.5*${ra_size})" | bc -l)
 ra_max=$(echo "${ra}+(0.5*${ra_size})" | bc -l)
