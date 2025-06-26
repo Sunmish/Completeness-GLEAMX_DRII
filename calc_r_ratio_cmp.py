@@ -73,8 +73,8 @@ for (ra,dec) in np.nditer((ra_list,dec_list)):
     else:
         y_i = y
 
-    a = psf_data[0, x_i, y_i]
-    b = psf_data[1, x_i, y_i]
+    a = psf_data[0, x_i, y_i]*3600.
+    b = psf_data[1, x_i, y_i]*3600.
     c = psf_data[2, x_i, y_i]
     r = 1.
     print(ra,dec,flux,a,b,c,r, file=f)
