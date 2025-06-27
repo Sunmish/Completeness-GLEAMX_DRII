@@ -14,7 +14,11 @@ from astropy.wcs import WCS
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+from scipy.spatial.distance import cdist
 from tqdm import trange
+
+from flux_warp import sparse_grid_interpolator
 
 
 # https://stackoverflow.com/a/61629292/3293881 @Ehsan
@@ -40,18 +44,36 @@ def read_catalogue(input_catalogue):
     return ra, dec
 
 
-def count_sources_(ref_pos, comp_pos, sep):
+def count_source__(ref_pos, comp_pos, sep):
     # mask = ref_pos.separation(comp_pos) <= (sep * u.degree)
     dist = norm_method(comp_pos, ref_pos)
     mask = dist <= sep
+    idx = np.where(dist <= sep)[0]
+    if len(idx) != np.sum(mask):
+        raise ValueError 
+    return np.sum(mask)
+
+def count_sources1(ref_pos, comp_pos, sep):
+    seps = ref_pos.separation(comp_pos)
+    print("seps")
+    print(seps.value)
+    print("min sep")
+    print(np.min(seps.value))
+    print("max sep")
+    print(np.max(seps.value))
+    mask = seps.value <= sep
     return np.sum(mask)
 
 def count_sources(ref_pos, comp_pos, sep):
+    dist = cdist(np.array([ref_pos]), comp_pos.T)
+    mask = dist <= sep
+    return np.sum(mask)
+
+def count_sources_(ref_pos, comp_pos, sep):
     dist = np.linalg.norm(
         ref_pos.T - comp_pos.T[:, None], axis=2
     )
-    idx = np.where(dist <= sep)[0]
-    return len(idx)
+    return np.sum(dist<=sep, axis=1)
 
 
 
@@ -182,8 +204,8 @@ plt.tight_layout()
 plt.savefig(args.output_root + ".pdf")
 plt.close()
 
-import sys
-sys.exit(0)
+# import sys
+# sys.exit(0)
 if args.template_map:
     print("Calculating completeness cube")
 
@@ -225,7 +247,7 @@ if args.template_map:
     f = step
     n = 0
 
-    radius_pix = (args.rad/60.) / abs(cdelt1)
+    radius_pix = (args.rad) / abs(cdelt1)
     print("Pixel radius = {}".format(radius_pix))
 
     # pbar = trange(ydim)
@@ -241,19 +263,63 @@ if args.template_map:
     ref_pos_flat = np.array([
         ref_pos[i].flatten() for i in [0, 1]
     ])
-    chunk_size = 1000
-    print("len ref_post_flat[0, :] {} ".format(len(ref_pos_flat[0, :])))
-    pbar = trange(0, len(ref_pos_flat[0, :]), chunk_size)
-    for n in pbar:
-        ninj_rad = count_sources(ref_pos_flat[:, n:n+chunk_size], sky_inj_px, radius_pix)
-        # for i in range(sdim):
-        for i in [15]:
-            ndet_rad = count_sources(ref_pos_flat[:, n:n+chunk_size], sky_det_px[i], radius_pix)
-            cmp_cube[i,
-                ref_pos_flat[:, n:n+chunk_size][0],
-                ref_pos_flat[:, n:n+chunk_size][1], 
-            ] = ndet_rad / ninj_rad * 100.
+    chunk_size = 100
+    print("len ref_pos_flat[0, :] {} ".format(len(ref_pos_flat[0, :])))
+    # pbar = trange(0, len(ref_pos_flat[0, :]), chunk_size)
+    # for n in pbar:
+    #     ninj_rad = count_sources(ref_pos_flat[:, n:n+chunk_size], sky_inj_px, radius_pix)
+    #     # for i in range(sdim):
+    #     for i in [15]:
+    #         ndet_rad = count_sources(ref_pos_flat[:, n:n+chunk_size], sky_det_px[i], radius_pix)
+    #         cmp_cube[i,
+    #             ref_pos_flat[:, n:n+chunk_size][0],
+    #             ref_pos_flat[:, n:n+chunk_size][1], 
+    #         ] = ndet_rad / ninj_rad * 100.
+
     
+    sky_inj_px_coord = SkyCoord(
+        x=sky_inj_px[0],
+        y=sky_inj_px[1],
+        z=[0]*len(sky_inj_px[0]),
+        representation_type="cartesian"
+    )
+    sky_det_px_coord = [SkyCoord(
+        x=sky_det_px_i[0],
+        y=sky_det_px_i[1],
+        z=[0]*len(sky_det_px_i[0]),
+        representation_type="cartesian"
+    ) for sky_det_px_i in sky_det_px]
+    
+
+    pbar = trange(sdim)
+    for i in pbar:
+        cmap_arr = np.full((shape[1],shape[2]), np.nan)
+        compls = []
+        for coord in sky_inj_px.T:
+            # print(coord)
+            ninj_rad = count_sources(coord, sky_inj_px, radius_pix)
+            ndet_rad = count_sources(coord, sky_det_px[i], radius_pix)
+            compl = ndet_rad / ninj_rad * 100.
+            # print(compl)
+            cmap_arr[int(coord[0]), int(coord[1])] = compl
+            compls.append(compl)
+            cmp_cube[i, int(coord[0]), int(coord[1])] = compl
+        
+        arr = sparse_grid_interpolator._rbf(
+            arr=cmap_arr,
+            x=sky_inj_px[0],
+            y=sky_inj_px[1],
+            z=compls,
+            interpolation="nearest"
+        )
+ 
+        cmp_cube[i, ...] = arr
+
+        with open(f"test{i}.txt", "w+") as f:
+            f.write("x,y,compl\n")
+            for i in range(len(compls)):
+                f.write("{},{},{}\n".format(sky_inj_px[0][i],sky_inj_px[1][i],compls[i]))
+
 
     out = template
     out[0].header = hdr
