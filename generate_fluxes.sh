@@ -30,6 +30,8 @@ if [[ $1 ]] && [[ $2 ]] && [[ $3 ]] && [[ $4 ]] && [[ $5 ]] && [[ $6 ]]; then
     nfiles=$(echo $5 | awk -F"=" '{print $NF}')
     # Output directory
     output_dir=$(echo $6 | awk -F"=" '{print $NF}')
+    # Template image for source locations:
+    template_image=$(echo $7 | awk -F"=" '{print $NF}')
 else
     echo "Give me: nsrc region sep_min flux nfiles output_dir"
     exit 1
@@ -100,7 +102,8 @@ singularity exec ${BINDING} \
 "$CONTAINER" \
 "$MYCODE/generate_pos.py" \
 --nsrc="$nsrc" \
---region="$region" \
+--template_image=${template_image} \
+--return_if_not_converged \
 --sep-min="$sep_min" \
 "${pos_outdir}/source_pos.txt"
 

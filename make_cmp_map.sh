@@ -39,6 +39,8 @@ if [[ $1 ]] && [[ $2 ]] && [[ $3 ]] && [[ $4 ]] && [[ $5 ]] && [[ $6 ]] && [[ $7
     rad=$(echo "$6" | awk -F"=" '{print $NF}')
     # Output directory
     output_dir=$(echo "$7" | awk -F"=" '{print $NF}')
+    # Output basename for completeness files:
+    output_root=$(echo "$8" | awk -F"=" '{print $NF}')
 else
     echo "Give me: injected_sources detected_sources flux template_map region rad output_dir"
     exit 1
@@ -68,12 +70,13 @@ EOPAR
 echo "About to run the python script now" 
 
 # Run Python script
-singularity exec -B "/mnt/" "$CONTAINER" \
+singularity exec ${BINDING} "$CONTAINER" \
 "$MYCODE/make_cmp_map.py" \
 --flux="$flux" \
 --region="$region" \
 --rad="$rad" \
 --template-map="$template_map" \
+--output-root="${output_root}" \
 "$injected_sources" \
 "$detected_sources"
 

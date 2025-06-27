@@ -13,9 +13,9 @@ module load singularity/4.1.0-slurm
 # A simple helper script to string together the completeness tasks that need to be run.
 
 SOURCE_DENSITY=10
-flux=-2.4,0.0,0.1
+flux=-1.9,0.0,0.05
 nfiles=1
-sep_min=4
+sep_min=8
 imageset_dir=./
 
 
@@ -60,7 +60,8 @@ $region \
 $sep_min \
 $flux \
 $nfiles \
-"$outdir/"
+"$outdir/" \
+"${input}/${imageset}.fits"
 
 "$MYCODE/inject_sources.sh" \
 "${input}" \
@@ -77,4 +78,5 @@ $nfiles \
 "${input}/${imageset}_psfmap.fits" \
 "${region}" \
 6 \
-"${GLEAMX}/results"
+"${GLEAMX}/results" \
+"${imageset}_completeness" \

@@ -14,6 +14,21 @@ from astropy.wcs import WCS
 import numpy as np
 import matplotlib.pyplot as plt
 
+from tqdm import trange
+
+
+# https://stackoverflow.com/a/61629292/3293881 @Ehsan
+def norm_method(arr, point):
+    point = np.asarray(point)
+
+    idx = np.indices(arr.shape, sparse=True)
+    idx = (idx[0] - point[0], idx[1]-point[1])
+    # new numpy requires object dtype for ragged lists
+    a = np.array([idx[0], idx[1]], dtype=object)
+    norm = np.linalg.norm(a)
+    
+    return norm
+
 
 # Define function to read catalogue with detected simulated sources
 def read_catalogue(input_catalogue):
@@ -25,10 +40,19 @@ def read_catalogue(input_catalogue):
     return ra, dec
 
 
-def count_sources(ref_pos, comp_pos, sep):
-    mask = ref_pos.separation(comp_pos) <= (sep * u.degree)
-
+def count_sources_(ref_pos, comp_pos, sep):
+    # mask = ref_pos.separation(comp_pos) <= (sep * u.degree)
+    dist = norm_method(comp_pos, ref_pos)
+    mask = dist <= sep
     return np.sum(mask)
+
+def count_sources(ref_pos, comp_pos, sep):
+    dist = np.linalg.norm(
+        ref_pos.T - comp_pos.T[:, None], axis=2
+    )
+    idx = np.where(dist <= sep)[0]
+    return len(idx)
+
 
 
 # Read input parameters
@@ -91,29 +115,6 @@ injected_sources = args.injected_sources
 detected_sources = args.detected_sources
 # if not args.flux:
 #     parser.error("Flux parameter not given")
-
-# Read region parameter
-ra_min = float(args.region.split(",")[0])
-ra_max = float(args.region.split(",")[1])
-dec_min = float(args.region.split(",")[2])
-dec_max = float(args.region.split(",")[3])
-
-dec_min_upper = float(-60)
-
-# Check RA and Dec ranges
-if (
-    dec_min < -90.0
-    or dec_min > 90.0
-    or dec_max < -90.0
-    or dec_max > 90.0
-    or dec_min >= dec_max
-):
-    print("Error: Dec range entered incorrectly. Aborting.")
-    exit(1)
-
-# if ra_min < 0.0 or ra_min > 360.0 or ra_max < 0.0 or ra_max > 360.0 or ra_min == ra_max:
-#     print("Error: RA range entered incorrectly. Aborting.")
-#     exit(1)
 
 # Read flux parameter and create array with flux levels
 s_min = float(args.flux.split(",")[0])
@@ -189,9 +190,9 @@ if args.template_map:
     # Update header of template FITS map
     template = fits.open(args.template_map)
     hdr = template[0].header
-    hdr.set("CDELT3", s_step, before="CTYPE3")
-    hdr.set("CRPIX3", 1.0, before="CTYPE3")
-    hdr.set("CRVAL3", s_min, before="CTYPE3")
+    hdr.set("CDELT3", s_step)
+    hdr.set("CRPIX3", 1.0)
+    hdr.set("CRVAL3", s_min)
     hdr.set("CTYPE3", "log10[ S/(Jy/beam) ]", "")
     hdr.set("CUNIT3", "Jy/beam")
     hdr.set("BUNIT", "Completeness (per cent)")
@@ -199,26 +200,24 @@ if args.template_map:
     cdelt1 = hdr["CDELT1"]
     if cdelt1 > 0:
         hdr.set("CDELT1", -cdelt1)
-    w = WCS(hdr)
+    w = WCS(hdr).celestial
 
-    # Count total number of (RA,Dec) pixels
-    ra1, dec1, dec2 = math.ceil(ra_min), math.ceil(dec_min), math.floor(dec_max)
-    if ra_max < ra_min:
-        ra2 = math.floor(ra_max + 360.0)
-    else:
-        ra2 = math.floor(ra_max)
-
-    npix = (ra2 - ra1 + 1) * (dec2 - dec1 + 1)
+    npix = hdr["NAXIS1"]*hdr["NAXIS2"]
 
     # Create a SkyCoord object to create SkyCoord objects
     sky_inj = SkyCoord(ra_inj * u.deg, dec_inj * u.deg)
     sky_det = [SkyCoord(r * u.deg, d * u.deg) for r, d in zip(ra_det, dec_det)]
 
+    sky_inj_px = np.asarray(w.all_world2pix(sky_inj.ra.value, sky_inj.dec.value, 0))[::-1]
+    sky_det_px = [np.asarray(w.all_world2pix(sky_det_i.ra.value, sky_det_i.dec.value, 0))[::-1]
+        for sky_det_i in sky_det]
+    
     # Calculate completeness map at each flux level, blanking out pixels outside the specified region
     data = template[0].data
     shape = data.shape
     ydim = shape[1]
     xdim = shape[2]
+    # sdim = 1
     shape = (sdim, ydim, xdim)
     cmp_cube = np.empty(shape)
     cmp_cube[:] = np.nan
@@ -226,42 +225,35 @@ if args.template_map:
     f = step
     n = 0
 
-    for j in range(0, ydim):
-        for k in range(0, xdim):
-            px = np.array([[k, j, 0]])
-            t = w.wcs_pix2world(px, 0)
-            ra, dec = t[0, 0], t[0, 1]
+    radius_pix = (args.rad/60.) / abs(cdelt1)
+    print("Pixel radius = {}".format(radius_pix))
 
-            if dec >= dec_min and dec <= dec_max:
-                if (ra_max > ra_min and (ra >= ra_min and ra <= ra_max)) or (
-                    ra_max < ra_min and (ra >= ra_min or ra <= ra_max)
-                ):
-                    ref_pos = SkyCoord(ra * u.deg, dec * u.deg)
-                    ninj_rad = count_sources(ref_pos, sky_inj, args.rad)
-                    for i in range(0, sdim):
-                        ndet_rad = count_sources(ref_pos, sky_det[i], args.rad)
-                        cmp_cube[i, j, k] = ndet_rad / ninj_rad * 100.0
+    # pbar = trange(ydim)
+    # for j in pbar:
+    #     for k in range(0, xdim):
+    #         ref_pos = (j, k)
+    #         ninj_rad = count_sources(ref_pos, sky_inj_px, radius_pix)
+    #         for i in range(0, sdim):
+    #             ndet_rad = count_sources(ref_pos, sky_det_px[i], radius_pix)
+    #             cmp_cube[i, j, k] = ndet_rad / ninj_rad * 100.0
 
-                    n = n + 1
-                    p = (n / npix) * 100
-                    if p >= f:
-                        print("%.0f" % p, "% complete")
-                        f = f + step
-            # elif dec >= dec_min and dec <= dec_max: 
-            #     if (ra_max > ra_min and (ra >= ra_min and ra <= ra_max)) or (
-            #         ra_max < ra_min and (ra >= ra_min or ra <= ra_max)
-            #     ):
-            #         ref_pos = SkyCoord(ra * u.deg, dec * u.deg)
-            #         ninj_rad = count_sources(ref_pos, sky_inj, 20)
-            #         for i in range(0, sdim):
-            #             ndet_rad = count_sources(ref_pos, sky_det[i], 20)
-            #             cmp_cube[i, j, k] = ndet_rad / ninj_rad * 100.0
-
-            #         n = n + 1
-            #         p = (n / npix) * 100
-            #         if p >= f:
-            #             print("%.0f" % p, "% complete")
-            #             f = f + step              
+    ref_pos = np.indices((shape[1],shape[2]))
+    ref_pos_flat = np.array([
+        ref_pos[i].flatten() for i in [0, 1]
+    ])
+    chunk_size = 1000
+    print("len ref_post_flat[0, :] {} ".format(len(ref_pos_flat[0, :])))
+    pbar = trange(0, len(ref_pos_flat[0, :]), chunk_size)
+    for n in pbar:
+        ninj_rad = count_sources(ref_pos_flat[:, n:n+chunk_size], sky_inj_px, radius_pix)
+        # for i in range(sdim):
+        for i in [15]:
+            ndet_rad = count_sources(ref_pos_flat[:, n:n+chunk_size], sky_det_px[i], radius_pix)
+            cmp_cube[i,
+                ref_pos_flat[:, n:n+chunk_size][0],
+                ref_pos_flat[:, n:n+chunk_size][1], 
+            ] = ndet_rad / ninj_rad * 100.
+    
 
     out = template
     out[0].header = hdr
